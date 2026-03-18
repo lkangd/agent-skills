@@ -236,7 +236,7 @@ Database
 
 ### Contribution Workflow
 
-1. Create a new branch: `feature/*` or `fix/*`.
+1. Create a new branch using `[inferred branch naming convention from git_activity.branch_naming]` (for example: `[branch example 1]`, `[branch example 2]`).
 2. Before commit, run: tests, lint, build.
 3. Submit a PR with change notes and verification results.
 4. Merge only after at least one reviewer approves.

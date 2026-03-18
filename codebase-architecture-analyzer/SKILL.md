@@ -19,15 +19,13 @@ Use this skill to inspect a codebase and produce a concise, evidence-based archi
 
 ### 2. Collect a reproducible snapshot
 
-- Run `python3 scripts/collect_architecture_snapshot.py <repo_path>` (optional: `--format json|md|both`, default `both`; `--tree-depth <n>`, like `tree -L n`).
-- Use generated artifacts in `.architecture-snapshot/` as evidence:
-  - `snapshot.json`: structured snapshot data.
-  - `snapshot.md`: readable snapshot report.
-  - JSON keys include `tree_depth`, `project_stats`, `git_activity`, `tree`, `root_files`, `manifests`, `imports`, `endpoints`.
-  - `project_stats` includes total file count, largest file, and primary programming languages.
-  - `git_activity` includes latest non-merge commits (up to 100), top 3 contributors, and local/remote branch naming samples for report filling.
-  - `tree` in JSON is hierarchical (`name/type/children`) and respects `tree_depth`; Markdown renders it with tree-style lines (e.g. `├──`, `└──`).
-  - `imports`/`endpoints` use structured match items: `file_name`, `file_path`, `line_number`, `line_text`.
+- Run `python3 scripts/collect_architecture_snapshot.py <repo_path>` (optional: `--tree-depth <n>`, like `tree -L n`).
+- Use the script's stdout JSON output directly as evidence (do not rely on snapshot files).
+- The script returns a structured snapshot with keys including `tree_depth`, `project_stats`, `git_activity`, `tree`, `root_files`, `manifests`, `imports`, `endpoints`.
+- `project_stats` includes total file count, largest file, and primary programming languages.
+- `git_activity` includes latest non-merge commits (up to 100), top 3 contributors, and local/remote branch naming samples for report filling.
+- `tree` is hierarchical (`name/type/children`) and respects `tree_depth`.
+- `imports`/`endpoints` use structured match items: `file_name`, `file_path`, `line_number`, `line_text`.
 
 ### 3. Build architecture model
 
@@ -50,14 +48,14 @@ Produce a report with:
 - Refactor recommendations with effort and impact.
 
 Use `references/report-template.md` as the default output structure.
-The final consolidated report file must be named `ARCHITECTURE.md` and stored at `.architecture-snapshot/ARCHITECTURE.md`.
+The final consolidated report file must be named `ARCHITECTURE.md` and stored at `.codebase-architecture-analyzer/ARCHITECTURE.md`.
 
 Output enforcement:
 
 - Do not stop at snapshot interpretation or intermediate analysis notes.
 - Always return a complete report document in the final answer, even if some sections are marked as "insufficient evidence".
 - If evidence is missing, keep the report structure and explicitly list missing inputs in the corresponding sections.
-- The final report document filename is mandatory: `.architecture-snapshot/ARCHITECTURE.md`.
+- The final report document filename is mandatory: `.codebase-architecture-analyzer/ARCHITECTURE.md`.
 
 Language selection for the final report:
 
@@ -73,6 +71,7 @@ Language selection for the final report:
 - When possible, keep document reading time within 10 minutes.
 - Provide executable verification steps after each configuration stage.
 - Prefer linking to authoritative docs (e.g., the project README) instead of copying lengthy content.
+- Project documentation may be outdated; if observed facts from code/runtime/configuration conflict with docs, treat observed facts as source of truth and explicitly note the discrepancy in the report.
 - Base all major claims on files or code patterns from the snapshot.
 - Distinguish facts from inferences explicitly.
 - Avoid generic advice; tie recommendations to exact modules or boundaries.

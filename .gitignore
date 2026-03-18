@@ -46,4 +46,4 @@ Thumbs.db
 .env.*.local
 
 # generated files
-.architecture-snapshot/
+.codebase-architecture-analyzer/

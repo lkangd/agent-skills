@@ -13,8 +13,9 @@ from typing import Optional
 
 
 EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", "target", ".next"}
-EXCLUDED_STATS_DIRS = EXCLUDED_DIRS | {".architecture-snapshot"}
-EXCLUDED_TREE_DIRS = EXCLUDED_DIRS | {".architecture-snapshot"}
+EXCLUDED_STATS_DIRS = EXCLUDED_DIRS | {".codebase-architecture-analyzer"}
+EXCLUDED_TREE_DIRS = EXCLUDED_DIRS | {".codebase-architecture-analyzer"}
+EXCLUDED_INDEX_DIRS = EXCLUDED_DIRS | {".codebase-architecture-analyzer"}
 MAX_TREE_DEPTH = 4
 
 EXACT_MANIFESTS = {
@@ -246,9 +247,16 @@ def render_match_lines(values: list[dict[str, object]]) -> list[str]:
     return lines
 
 
-def collect_root_files(repo_path: Path) -> list[str]:
-    files = sorted([p.name for p in repo_path.iterdir() if p.is_file()])
-    return files
+def collect_root_files(repo_path: Path, gitignore_rules: list[GitIgnoreRule]) -> list[str]:
+    files: list[str] = []
+    for p in repo_path.iterdir():
+        if not p.is_file():
+            continue
+        rel = p.relative_to(repo_path)
+        if _is_excluded(rel, EXCLUDED_DIRS, gitignore_rules, False):
+            continue
+        files.append(p.name)
+    return sorted(files)
 
 
 def is_manifest_file(repo_path: Path, file_path: Path) -> bool:
@@ -278,7 +286,9 @@ def collect_manifests(repo_path: Path, gitignore_rules: list[GitIgnoreRule]) -> 
     return sorted(manifests)
 
 
-def run_rg(repo_path: Path, pattern: str) -> list[dict[str, object]]:
+def run_rg(
+    repo_path: Path, pattern: str, gitignore_rules: list[GitIgnoreRule]
+) -> list[dict[str, object]]:
     rg = shutil.which("rg")
     if not rg:
         return []
@@ -298,7 +308,7 @@ def run_rg(repo_path: Path, pattern: str) -> list[dict[str, object]]:
         "--glob",
         "!target/*",
         "--glob",
-        "!.architecture-snapshot/*",
+        "!.codebase-architecture-analyzer/*",
         pattern,
         ".",
     ]
@@ -322,6 +332,9 @@ def run_rg(repo_path: Path, pattern: str) -> list[dict[str, object]]:
             if len(parts) < 3:
                 continue
             rel_path, line_no, text = parts
+            rel_obj = Path(rel_path)
+            if _is_excluded(rel_obj, EXCLUDED_INDEX_DIRS, gitignore_rules, False):
+                continue
             try:
                 line_number = int(line_no)
             except ValueError:
@@ -337,20 +350,6 @@ def run_rg(repo_path: Path, pattern: str) -> list[dict[str, object]]:
             )
         return matches
     raise RuntimeError(result.stderr.strip() or "rg failed")
-
-
-def remove_legacy_txt_outputs(out_dir: Path) -> None:
-    for txt in out_dir.glob("*.txt"):
-        txt.unlink(missing_ok=True)
-
-
-def clean_non_target_artifacts(out_dir: Path, output_format: str) -> None:
-    json_path = out_dir / "snapshot.json"
-    md_path = out_dir / "snapshot.md"
-    if output_format == "json":
-        md_path.unlink(missing_ok=True)
-    elif output_format == "md":
-        json_path.unlink(missing_ok=True)
 
 
 def iter_project_files(
@@ -742,12 +741,6 @@ def main() -> int:
     )
     parser.add_argument("repo_path", help="Path to the repository")
     parser.add_argument(
-        "--format",
-        choices=("json", "md", "both"),
-        default="both",
-        help="Output format to generate (default: both).",
-    )
-    parser.add_argument(
         "--tree-depth",
         type=int,
         default=MAX_TREE_DEPTH,
@@ -763,10 +756,6 @@ def main() -> int:
         print(f"Error: directory not found: {repo_path}", file=sys.stderr)
         return 1
 
-    out_dir = repo_path / ".architecture-snapshot"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    remove_legacy_txt_outputs(out_dir)
-    clean_non_target_artifacts(out_dir, args.format)
     gitignore_rules = load_gitignore_rules(repo_path)
 
     snapshot = {
@@ -776,30 +765,13 @@ def main() -> int:
         "project_stats": collect_project_stats(repo_path, gitignore_rules),
         "git_activity": collect_git_activity(repo_path, commit_limit=100),
         "tree": collect_tree(repo_path, args.tree_depth, gitignore_rules),
-        "root_files": collect_root_files(repo_path),
+        "root_files": collect_root_files(repo_path, gitignore_rules),
         "manifests": collect_manifests(repo_path, gitignore_rules),
-        "imports": run_rg(repo_path, IMPORT_PATTERN),
-        "endpoints": run_rg(repo_path, ENDPOINT_PATTERN),
+        "imports": run_rg(repo_path, IMPORT_PATTERN, gitignore_rules),
+        "endpoints": run_rg(repo_path, ENDPOINT_PATTERN, gitignore_rules),
     }
 
-    created_files: list[Path] = []
-    if args.format in {"json", "both"}:
-        json_path = out_dir / "snapshot.json"
-        json_path.write_text(
-            json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        created_files.append(json_path)
-
-    if args.format in {"md", "both"}:
-        md_path = out_dir / "snapshot.md"
-        md_path.write_text(render_markdown(snapshot), encoding="utf-8")
-        created_files.append(md_path)
-
-    print(f"Snapshot generated at: {out_dir}")
-    print("Artifacts:")
-    for path in created_files:
-        print(f"- {path.name}")
+    print(json.dumps(snapshot, ensure_ascii=False, indent=2))
     return 0
 
 
