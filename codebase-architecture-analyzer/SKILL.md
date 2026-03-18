@@ -1,63 +1,127 @@
 ---
 name: codebase-architecture-analyzer
-description: Analyze the architecture of a specified codebase and produce a structured report covering modules, dependency boundaries, runtime topology. Use when users ask to understand project structure, assess maintainability, identify coupling and layering problems, review architecture for migration/refactor planning, or create architecture documentation from an existing repository.
+description: |
+  Analyze codebase architecture and produce structured reports. TRIGGER when users ask about: project structure, code organization, module boundaries, dependency graphs, dependency analysis, data flow, entry points, architecture documentation, maintainability assessment, coupling issues, layering problems, refactoring preparation, migration planning, or onboarding documentation. Also trigger when users mention architecture reviews, architectural health, or want to understand how a codebase is organized - even if they don't explicitly use the word "architecture".
 ---
 
 # Codebase Architecture Analyzer
 
-## Overview
+Produce concise, evidence-based architecture assessments that help readers quickly understand a project.
 
-Use this skill to inspect a codebase and produce a concise, evidence-based architecture assessment. It is intended to help readers quickly understand the project.
+## Workflow
 
-## Recommended Workflow
+Follow these steps in order. Each step builds on the previous one.
 
-### 1. Scope the target
+### Step 1: Scope and Context
 
-- Confirm the target repository path.
-- Confirm the expected output depth: quick overview or detailed architecture review.
-- Prefer reading root-level files first (`README*`, `package.json`, `pyproject.toml`, `go.mod`, `pom.xml`, `Dockerfile*`, CI config).
+**Ask or infer:**
 
-### 2. Collect a reproducible snapshot
+- Target repository path (default: current directory)
+- Analysis depth: `quick` (overview) or `detailed` (full review)
+- User's goal: `understand`, `refactor`, `onboard`, or `document`
 
-- Run `python3 scripts/collect_architecture_snapshot.py <repo_path>` (optional: `--tree-depth <n>`, like `tree -L n`).
-- Use the script's stdout JSON output directly as evidence (do not rely on snapshot files).
-- The script returns a structured snapshot with keys including `tree_depth`, `project_stats`, `git_activity`, `tree`, `root_files`, `manifests`, `imports`, `endpoints`.
-- `project_stats` includes total file count, largest file, and primary programming languages.
-- `git_activity` includes latest non-merge commits (up to 100), top 3 contributors, and local/remote branch naming samples for report filling.
-- `tree` is hierarchical (`name/type/children`) and respects `tree_depth`.
-- `imports`/`endpoints` use structured match items: `file_name`, `file_path`, `line_number`, `line_text`.
+**Read root-level signals first:**
 
-### 3. Build architecture model
+```
+README*, package.json, pyproject.toml, go.mod, pom.xml, Cargo.toml
+Dockerfile*, docker-compose*.yml
+.github/workflows/*.yml, .gitlab-ci.yml, Jenkinsfile
+```
 
-Use `references/analysis-playbook.md` to map findings into:
+These files reveal: tech stack, build tools, deployment patterns, and project purpose.
 
-- Entry points and runtime surfaces (API, worker, CLI, batch).
-- Module boundaries and layering (presentation/application/domain/infrastructure).
-- Dependency flow (expected direction and possible violations).
-- Cross-cutting concerns (auth, config, logging, observability, data access).
+### Step 2: Collect Architecture Snapshot
 
-### 4. Report with concrete risk calls
+**Run the snapshot script:**
 
-This step is mandatory: always produce a final report document as the deliverable.
+```bash
+python3 scripts/collect_architecture_snapshot.py <repo_path> [--tree-depth 4]
+```
 
-Produce a report with:
+The script outputs JSON to stdout with these keys:
 
-- Current architecture summary.
-- Strengths (what is already clean).
-- Risks ordered by severity.
-- Refactor recommendations with effort and impact.
+| Key | Description | Use For |
+|-----|-------------|---------|
+| `tree` | Hierarchical directory structure | Understanding code organization |
+| `project_stats` | File counts, languages, largest files | Tech stack summary |
+| `git_activity` | Commits, contributors, branch patterns | Development patterns |
+| `root_files` | Files in repository root | Entry points identification |
+| `manifests` | Package/dependency files | Dependency analysis |
+| `imports` | Import statements with file locations | Dependency graph hints |
+| `endpoints` | API endpoint patterns | Runtime surface detection |
 
-Use `references/report-template.md` as the default output structure.
-The final consolidated report file must be named `ARCHITECTURE.md` and stored at `.codebase-architecture-analyzer/ARCHITECTURE.md`.
+**If the script fails:**
 
-Output enforcement:
+- Collect equivalent data manually using Glob, Grep, and Read tools
+- Note in the report that snapshot collection was unavailable
 
-- Do not stop at snapshot interpretation or intermediate analysis notes.
-- Always return a complete report document in the final answer, even if some sections are marked as "insufficient evidence".
-- If evidence is missing, keep the report structure and explicitly list missing inputs in the corresponding sections.
-- The final report document filename is mandatory: `.codebase-architecture-analyzer/ARCHITECTURE.md`.
+### Step 3: Analyze Architecture
 
-Language selection for the final report:
+Apply the methodology from `references/analysis-playbook.md`:
+
+**Map to layers:**
+
+```
+Presentation  → handlers, controllers, routes, UI
+Application   → services, orchestration, use-cases
+Domain        → business rules, entities, core logic
+Infrastructure → db, cache, external APIs, messaging
+```
+
+**Identify:**
+
+- **Entry points**: Where execution begins (main files, handlers, workers)
+- **Boundaries**: How modules are separated
+- **Dependency flow**: Does outer depend on inner? Any violations?
+- **Cross-cutting concerns**: Config, logging, auth, error handling
+
+### Step 4: Generate Report
+
+**Output file:** `.codebase-architecture-analyzer/ARCHITECTURE.md`
+
+**Required sections:**
+
+| Section | Content |
+|---------|---------|
+| Project Overview | What it does, who uses it, tech stack |
+| Quick Start | How to run/build the project |
+| Architecture Overview | Diagram + layer description |
+| Directory Organization | Tree with responsibility annotations |
+| Key Files | Entry points and important modules |
+| Strengths | What's already clean |
+| Risks/Recommendations | Prioritized by severity |
+
+**Use the template:** `references/report-template.md` provides the full structure.
+
+## Adaptation by User Goal
+
+### For "Understand" (Basic Analysis)
+
+- Focus on: entry points, module map, dependency overview
+- Output: Standard template with all sections
+- Depth: Moderate detail
+
+### For "Refactor" (Architecture Review)
+
+- Focus on: coupling issues, layering violations, boundary problems
+- Output: Add "Coupling Analysis" and "Proposed Architecture" sections
+- Include: Specific file paths and line numbers for each issue
+- Depth: High detail with code evidence
+
+### For "Onboard" (New Developer)
+
+- Focus on: reading order, key concepts, common tasks
+- Output: Add "Recommended Reading Order" and "Quick Navigation" sections
+- Use: Beginner-friendly language, explain acronyms
+- Depth: Practical focus, less theory
+
+### For "Document" (Architecture Docs)
+
+- Focus on: comprehensive coverage, diagrams, ADR references
+- Output: Full template with additional context
+- Depth: High detail
+
+## Language selection for the final report
 
 - If the user explicitly requests an output language, follow the user request.
 - If the user does not specify a language, infer the preferred report language from project signals:
@@ -66,20 +130,29 @@ Language selection for the final report:
   - Do not use programming language statistics (for example `project_stats.primary_languages`) to infer reading language.
 - Keep the entire report in one language unless the user asks for mixed-language output.
 
-## Quality bar
+## Quality Standards
 
-- When possible, keep document reading time within 10 minutes.
-- Provide executable verification steps after each configuration stage.
-- Prefer linking to authoritative docs (e.g., the project README) instead of copying lengthy content.
-- Project documentation may be outdated; if observed facts from code/runtime/configuration conflict with docs, treat observed facts as source of truth and explicitly note the discrepancy in the report.
-- Base all major claims on files or code patterns from the snapshot.
-- Distinguish facts from inferences explicitly.
-- Avoid generic advice; tie recommendations to exact modules or boundaries.
-- If evidence is insufficient, state what is missing and how to collect it.
-- Final output must be a report document, not only bullet-point analysis.
+- **Evidence-based**: Every claim references a specific file, function, or pattern
+- **Actionable**: Recommendations include file paths and concrete steps
+- **Honest about uncertainty**: If evidence is missing, say so explicitly
+- **Readable**: Target 10-minute reading time; use diagrams and tables
+- **Language-aware**: Match output language to project documentation language
+
+## Output Checklist
+
+Before finalizing, verify:
+
+- [ ] Report is saved to `.codebase-architecture-analyzer/ARCHITECTURE.md`
+- [ ] All required sections are present
+- [ ] Architecture includes a diagram (ASCII or mermaid)
+- [ ] Recommendations are tied to specific files/modules
+- [ ] Entry points are clearly identified
+- [ ] Risks are prioritized (High/Medium/Low)
 
 ## Resources
 
-- `scripts/collect_architecture_snapshot.py`: deterministic snapshot collector.
-- `references/analysis-playbook.md`: architecture analysis method.
-- `references/report-template.md`: reusable report skeleton.
+| Resource | Purpose |
+|----------|---------|
+| `scripts/collect_architecture_snapshot.py` | Deterministic data collection |
+| `references/analysis-playbook.md` | Layer/boundary analysis method |
+| `references/report-template.md` | Full report structure template |
