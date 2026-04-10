@@ -1,7 +1,9 @@
 ---
 name: codebase-architecture-analyzer
 description: |
-  Analyze codebase architecture and produce structured reports. TRIGGER when users ask about: project structure, code organization, module boundaries, dependency graphs, dependency analysis, data flow, entry points, architecture documentation, maintainability assessment, coupling issues, layering problems, refactoring preparation, migration planning, or onboarding documentation. Also trigger when users mention architecture reviews, architectural health, or want to understand how a codebase is organized - even if they don't explicitly use the word "architecture".
+  Analyze codebase architecture and produce structured reports.
+argument-hint: "[goal:understand|refactor|onboard|document] [language]"
+disable-model-invocation: true
 ---
 
 # Codebase Architecture Analyzer
