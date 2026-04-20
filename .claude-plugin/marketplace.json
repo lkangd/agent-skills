@@ -1,0 +1,20 @@
+{
+  "name": "coding-agent-skills",
+  "owner": {
+    "name": "Curtis Liong",
+    "email": "lkangd@gmail.com"
+  },
+  "metadata": {
+    "description": "A collection of skills for the coding agent",
+    "version": "0.0.1"
+  },
+  "plugins": [
+    {
+      "name": "commit-commands",
+      "source": "./",
+      "description": "Streamline your git workflow with simple commands for committing, pushing, and creating pull requests",
+      "category": "git",
+      "tags": ["git", "commit", "push", "pull request"]
+    }
+  ]
+}
