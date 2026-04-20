@@ -6,15 +6,32 @@
   },
   "metadata": {
     "description": "A collection of skills for the coding agent",
-    "version": "0.0.1"
+    "version": "0.0.2"
   },
   "plugins": [
     {
+      "name": "codebase-architecture-analyzer",
+      "source": "./plugins/codebase-architecture-analyzer",
+      "description": "Analyze codebase architecture and produce structured reports",
+      "category": "codebase",
+      "tags": [
+        "codebase",
+        "architecture",
+        "analysis",
+        "report"
+      ]
+    },
+    {
       "name": "commit-commands",
-      "source": "./",
+      "source": "./plugins/commit-commands",
       "description": "Streamline your git workflow with simple commands for committing, pushing, and creating pull requests",
       "category": "git",
-      "tags": ["git", "commit", "push", "pull request"]
+      "tags": [
+        "git",
+        "commit",
+        "push",
+        "pull request"
+      ]
     }
   ]
 }
