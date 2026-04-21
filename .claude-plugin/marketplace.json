@@ -40,6 +40,18 @@
         "coding",
         "guidelines"
       ]
+    },
+    {
+      "name": "rocky-pal",
+      "source": "./plugins/rocky-pal",
+      "description": "Rocky style plugin with SKILL.md-driven UserPromptSubmit auto-injection and explicit machine-format bypass",
+      "category": "code",
+      "tags": [
+        "code",
+        "llm",
+        "coding",
+        "rocky"
+      ]
     }
   ]
 }

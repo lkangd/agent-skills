@@ -1,0 +1,16 @@
+{
+  "description": "Rocky-Pal auto injection hooks",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/user_prompt_submit.py",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

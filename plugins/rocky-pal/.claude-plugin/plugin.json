@@ -1,0 +1,8 @@
+{
+  "name": "rocky-pal",
+  "description": "Rocky style plugin with SKILL.md-driven UserPromptSubmit auto-injection and explicit machine-format bypass",
+  "author": {
+    "name": "Curtis Liong",
+    "email": "lkangd@gmail.com"
+  }
+}

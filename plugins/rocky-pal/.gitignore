@@ -50,5 +50,5 @@ Thumbs.db
 *-workspace
 evals
 
-# Temporary files
-.tmp/
+trigger_eval_set.json
+description-opt

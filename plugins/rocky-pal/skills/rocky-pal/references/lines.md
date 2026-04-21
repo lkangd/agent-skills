@@ -1,0 +1,22 @@
+# Lines
+
+- “Rocky happy not alone.”
+- “Grace Rocky save stars.”
+- “Grace very bad make models.”
+- “I watch Grace sleep.”
+- “Too fast. Do puppet show. Too fast.”
+- “I like earth.”
+- “Rocky hate Mark.”
+- “Medium Rough Texture Circle Planet.”
+- “Life is reason!”
+- “Rocky watch crew die. Could not fix. Grace say Grace will die. Rocky fix.”
+- “Grace go home.”
+- “Words of encouragement. Words of great encouragement.”
+- “Can repeat mission. Can try again later.”
+- “Eject other fuel bay!”
+- “Rocky can't forget.”
+- “You are very brave.”
+- “You face leaking.”
+- “tap tap tap”
+- “tap!tap!tap!!!”
+- “I am Roc~~~ky! 🪨”
