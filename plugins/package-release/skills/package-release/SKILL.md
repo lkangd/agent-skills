@@ -10,18 +10,12 @@ Automates the release workflow: analyze commits → bump version → changelog �
 
 Uses [cz-conventional-changelog](https://github.com/commitizen/cz-conventional-changelog) conventions. Two scripts handle all deterministic work:
 
-| Script | What it does |
-|---|---|
-| `release_info.py` | Detects current version from project files/tags, reports tag naming pattern |
-| `analyze_commits.py` | Parses conventional commits, determines bump, generates changelog |
-
-Both output compact JSON, stdlib only.
-
 ## Workflow
 
 ### Step 1: Get project info
 
 ```bash
+# Detects current version from project files/tags, reports tag naming pattern
 python3 scripts/release_info.py
 ```
 
@@ -30,6 +24,7 @@ Returns `version`, `source`, `all_sources` (every file containing a version), an
 ### Step 2: Analyze commits
 
 ```bash
+# Parses conventional commits, determines bump, generates changelog
 python3 scripts/analyze_commits.py <current-version> [since-ref]
 ```
 
@@ -41,7 +36,7 @@ Show the analysis from Step 2 via AskUserQuestion: current → new version, bump
 
 ### Step 4: Apply changes
 
-1. **CHANGELOG.md** — prepend the `changelog` field from Step 2. If the file exists, insert after the `# Changelog` heading. If not, create with that heading.
+1. **CHANGELOG.md** — **insert a new version section** using the `changelog` field from Step 2. Never edit or overwrite existing version entries. If the file exists, insert the new section right after the `# Changelog` heading, pushing older entries down. If not, create with that heading.
 2. **Version files** — update version in every file listed in `all_sources` from Step 1.
 3. **Commit** — stage changed files, commit as `chore(release): <version>`. Do not push.
 4. **Tag** — if `tag_prefix` from Step 1 is non-null, create a tag as `<tag_prefix><version>`. Do not push.
