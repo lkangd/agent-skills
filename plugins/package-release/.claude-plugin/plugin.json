@@ -1,8 +1,8 @@
 {
   "name": "package-release",
-  "version": "0.1.0",
   "description": "Automate package versioning, changelog generation, and release commits using conventional commit standards",
-  "skills": [
-    "skills/package-release/SKILL.md"
-  ]
+  "author": {
+    "name": "Curtis Liong",
+    "email": "lkangd@gmail.com"
+  }
 }
