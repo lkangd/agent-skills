@@ -50,7 +50,7 @@ def main():
         print(json.dumps({"error": f"invalid version: {current_version}"}))
         sys.exit(1)
 
-    # Auto-detect since ref from tags
+    # Auto-detect since ref from tags, fall back to last release commit
     if not since_ref:
         tags = subprocess.run(
             ["git", "tag", "--list", "--sort=-version:refname"],
@@ -62,6 +62,14 @@ def main():
                 if semver.match(line.strip()):
                     since_ref = line.strip()
                     break
+        # Fallback: find last chore(release) commit when no tags exist
+        if not since_ref:
+            last_release = subprocess.run(
+                ["git", "log", "--grep=^chore(release):", "--format=%H", "-1"],
+                capture_output=True, text=True
+            )
+            if last_release.returncode == 0 and last_release.stdout.strip():
+                since_ref = last_release.stdout.strip()
 
     # Get commits
     cmd = ["git", "log", "--format=%H|||%s|||%b|||---END---"]

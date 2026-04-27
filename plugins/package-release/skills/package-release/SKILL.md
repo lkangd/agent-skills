@@ -19,7 +19,7 @@ Uses [cz-conventional-changelog](https://github.com/commitizen/cz-conventional-c
 python3 scripts/release_info.py
 ```
 
-Returns `version`, `source`, `all_sources` (every file containing a version), and `tag_prefix` (e.g. `"v"` if tags look like `v1.0.0`, `null` if no version tags). If `version` is null, ask the user.
+Returns `version`, `source`, `all_sources` (every file containing a version), and `tag_prefix` (defaults to `"v"` when no version tags exist; `"v"` if tags look like `v1.0.0`, `""` for bare `1.0.0`, etc.). If `version` is null, ask the user.
 
 ### Step 2: Analyze commits
 
@@ -28,7 +28,7 @@ Returns `version`, `source`, `all_sources` (every file containing a version), an
 python3 scripts/analyze_commits.py <current-version> [since-ref]
 ```
 
-`since-ref` is optional — auto-detected from latest version tag. Returns `bump_type` (major/minor/patch or null), `new_version`, and `changelog` (ready-to-insert markdown). If `bump_type` is null, no conventional commits were found — ask the user to classify the release.
+`since-ref` is optional — auto-detected from latest version tag, falling back to the last `chore(release):` commit. Returns `bump_type` (major/minor/patch or null), `new_version`, `since_ref` (the ref actually used), and `changelog` (ready-to-insert markdown). If `bump_type` is null, no conventional commits were found — ask the user to classify the release.
 
 ### Step 3: Confirm with user
 
@@ -39,7 +39,7 @@ Show the analysis from Step 2 via AskUserQuestion: current → new version, bump
 1. **CHANGELOG.md** — **insert a new version section** using the `changelog` field from Step 2. Never edit or overwrite existing version entries. If the file exists, insert the new section right after the `# Changelog` heading, pushing older entries down. If not, create with that heading.
 2. **Version files** — update version in every file listed in `all_sources` from Step 1.
 3. **Commit** — stage changed files, commit as `chore(release): <version>`. Do not push.
-4. **Tag** — if `tag_prefix` from Step 1 is non-null, create a tag as `<tag_prefix><version>`. Do not push.
+4. **Tag** — create a tag as `<tag_prefix><version>` using `tag_prefix` from Step 1 (defaults to `v`). Do not push.
 
 ## Edge cases
 

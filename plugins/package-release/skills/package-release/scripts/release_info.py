@@ -100,7 +100,7 @@ def detect(root, tags):
         "source": primary["file"] if primary else None,
         "all_sources": sources,
         "tag_version": tag_version,
-        "tag_prefix": prefix if has_version_tags else None,
+        "tag_prefix": prefix if has_version_tags else "v",
     }
 
 
