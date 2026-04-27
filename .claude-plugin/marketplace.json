@@ -52,6 +52,17 @@
         "coding",
         "rocky"
       ]
+    },
+    {
+      "name": "package-release",
+      "source": "./plugins/package-release",
+      "description": "Automate package versioning and changelog generation using conventional commit standards",
+      "category": "package",
+      "tags": [
+        "package",
+        "version",
+        "changelog"
+      ]
     }
   ]
 }

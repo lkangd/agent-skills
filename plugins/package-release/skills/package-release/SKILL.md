@@ -1,0 +1,53 @@
+---
+name: package-release
+description: Automate package versioning and changelog generation using conventional commit standards.
+disable-model-invocation: true
+---
+
+# Package Release Skill
+
+Automates the release workflow: analyze commits → bump version → changelog → commit → tag.
+
+Uses [cz-conventional-changelog](https://github.com/commitizen/cz-conventional-changelog) conventions. Two scripts handle all deterministic work:
+
+| Script | What it does |
+|---|---|
+| `release_info.py` | Detects current version from project files/tags, reports tag naming pattern |
+| `analyze_commits.py` | Parses conventional commits, determines bump, generates changelog |
+
+Both output compact JSON, stdlib only.
+
+## Workflow
+
+### Step 1: Get project info
+
+```bash
+python3 scripts/release_info.py
+```
+
+Returns `version`, `source`, `all_sources` (every file containing a version), and `tag_prefix` (e.g. `"v"` if tags look like `v1.0.0`, `null` if no version tags). If `version` is null, ask the user.
+
+### Step 2: Analyze commits
+
+```bash
+python3 scripts/analyze_commits.py <current-version> [since-ref]
+```
+
+`since-ref` is optional — auto-detected from latest version tag. Returns `bump_type` (major/minor/patch or null), `new_version`, and `changelog` (ready-to-insert markdown). If `bump_type` is null, no conventional commits were found — ask the user to classify the release.
+
+### Step 3: Confirm with user
+
+Show the analysis from Step 2 via AskUserQuestion: current → new version, bump type, and changelog preview. Let the user accept, adjust bump level, or cancel.
+
+### Step 4: Apply changes
+
+1. **CHANGELOG.md** — prepend the `changelog` field from Step 2. If the file exists, insert after the `# Changelog` heading. If not, create with that heading.
+2. **Version files** — update version in every file listed in `all_sources` from Step 1.
+3. **Commit** — stage changed files, commit as `chore(release): <version>`. Do not push.
+4. **Tag** — if `tag_prefix` from Step 1 is non-null, create a tag as `<tag_prefix><version>`. Do not push.
+
+## Edge cases
+
+- **Uncommitted changes**: warn before proceeding, don't stage unrelated files.
+- **Monorepo**: ask which package(s) to release.
+- **No conventional commits**: `analyze_commits.py` groups them as "Other Changes" — ask user to pick bump level manually.
